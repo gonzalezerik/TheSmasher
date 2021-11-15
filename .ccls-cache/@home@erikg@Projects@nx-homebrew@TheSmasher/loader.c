@@ -32,18 +32,16 @@ int main(){
    
     ssize_t i;
     //next step is to iterate through the list and print them
-    
-    
-    printf("\nline37"); 
+    for(i = 0; i< count; i++){
+        printDev(*(devs + i));
+    }
+
+
     struct libusb_device_handle *devH = NULL;
-    printf("\nline39:");
     devH = libusb_open_device_with_vid_pid(context, SWITCH_VID, SWITCH_PID);
-    printf("\nLine 41")
-    if(devH == NULL){
+    if(devH < 0){
         perror("Could not connect to switch!");
         exit(1);
-    }else{
-        printf("\nSwitch conncted!");
     }
 
     uint8_t       bmReqType = 0;   // the request type (direction of transfer)
@@ -55,19 +53,12 @@ int main(){
     unsigned int     to = 0;       // timeout duration (if transfer fails)
     
     // transfer the setup packet to the USB device
-    
+    int config = libusb_control_transfer(devH,bmReqType,bReq,wVal,wIndex,data,wLen,to);
 
-    uint8_t chip_buffer[RCM_CHIP_LEN];
-    memset(&chip_buffer, 0, sizeof(chip_buffer));
-
-    rtn = libusb_bulk_transfer(devH, RCM_EP1_IN,data,wLen, RCM_CHIP_LEN, chip_buffer);
-    if(rtn < 0)
-    {
-        perror("failed to get device ID");
+    if (config < 0) {
+        perror("could not send data to the switch");
         exit(1);
     }
-    printf("\nDevice ID: ");
-
 
 
     libusb_exit(NULL);
@@ -77,7 +68,6 @@ int main(){
 
 
 }
-
 
 printDev(libusb_device *dev){
     struct libusb_device_descriptor  desc;
